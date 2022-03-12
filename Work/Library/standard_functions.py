@@ -28,7 +28,7 @@ class Database:
     def create_table(self):
         """
         Создание базы, если её не существует
-        :return: None 
+        :return: None
         author Moiseev Nicolay
         """
         request = f"CREATE TABLE IF NOT EXISTS {self.__name}("

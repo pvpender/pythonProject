@@ -31,14 +31,18 @@ class Database:
         :return: None
         author Moiseev Nicolay
         """
-        request = f"CREATE TABLE IF NOT EXISTS {self.__name}("
-        for i in self.__columns:
-            request += f"{i},"
-        request = request[0:-1] + ")"
+        request = f"CREATE TABLE IF NOT EXISTS {self.__name} {tuple(i for i in self.__columns)}"
         self.__cursor.execute(request)
 
-    def insert_row(self):
-        pass
+    def insert_row(self, mas):
+        """
+        Добавление строки в базу
+        :return: None
+        author Moiseev Nicolay
+        """
+        request = f"INSERT INTO {self.__name} {tuple(i for i in self.__columns)} VALUES {tuple(i for i in mas)}"
+        self.__cursor.execute(request)
+        self.__connection.commit()
 
     def del_row(self):
         pass

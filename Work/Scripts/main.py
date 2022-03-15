@@ -3,4 +3,3 @@ from application_functions import *
 
 if __name__ == "__main__":
     first_base = Database("../Data/test.db", "test", ["a", "b", "c"])
-

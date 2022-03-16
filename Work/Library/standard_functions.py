@@ -37,6 +37,7 @@ class Database:
     def insert_row(self, mas):
         """
         Добавление строки в базу
+        :param mas (List)
         :return: None
         author Moiseev Nicolay
         """

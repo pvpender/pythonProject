@@ -34,7 +34,7 @@ class Database:
         request = f"CREATE TABLE IF NOT EXISTS {self.__name} {tuple(i for i in self.__columns)}"
         self.__cursor.execute(request)
 
-    def insert_row(self, mas):
+    def insert_row(self, mas: list):
         """
         Добавление строки в базу
         :param mas (List)
@@ -45,8 +45,33 @@ class Database:
         self.__cursor.execute(request)
         self.__connection.commit()
 
-    def del_row(self):
-        pass
+    def del_row(self, table_rows: list, mas: list):
+        """
+        Удаление строки из базы
+        :param table_rows: Массив номеров столбцов которые проверяются
+        :param mas: Массив значений по которым рсуществляется проверка
+        :return: None
+        author Moiseev Nicolay
+        """
+        request = f"DELETE FROM {self.__name} WHERE "
+        for i in range(len(table_rows) - 1):
+            request += f"{self.__columns[table_rows[i]]} = {mas[i]} AND"
+        request += f" {self.__columns[table_rows[len(table_rows) - 1]]} = {mas[len(mas) - 1]}"
+        self.__cursor.execute(request)
+        self.__connection.commit()
 
-    def find_data(self):
-        pass
+    def find_data(self, table_rows: list, mas: list) -> list:
+        """
+        Поиск строк в базе
+        :param table_rows:
+        :param mas:
+        :return: Список столбцов с их значениями
+        author Moiseev Nicolay
+        """
+        request = f"SELECT * FROM {self.__name} WHERE "
+        for i in range(len(table_rows) - 1):
+            request += f"{self.__columns[table_rows[i]]} = {mas[i]} AND"
+        request += f" {self.__columns[table_rows[len(table_rows) - 1]]} = {mas[len(mas) - 1]}"
+        self.__cursor.execute(request)
+        data = self.__cursor.fetchall()
+        return data

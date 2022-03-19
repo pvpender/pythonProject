@@ -42,6 +42,18 @@ class Parser:
         else:
             return string
 
+    def get_info(self) -> dict:
+        """Функция получения чего-то
+        :return: Словарь
+        author Moiseev Nicolay
+        """
+        soup = BeautifulSoup(self.__page.text, "lxml")
+        mas = list(map(str, soup.tbody.text.split("\n")))[2:]
+        output_dict = {}
+        for i in range(0, len(mas), 16):
+            output_dict.update({mas[i]: [self.__none_testing(mas[i + 2][1:]), self.__none_testing(mas[i + 7][1:])]})
+        return output_dict
+
     def get_info_new_disease(self) -> dict:
         """
         Функция получения количества новых заражений
@@ -65,5 +77,5 @@ class Parser:
         mas = list(map(str, soup.tbody.text.split("\n")))[2:]
         output_dict = {}
         for i in range(0, len(mas), 16):
-            output_dict.update({mas[i] : self.__none_testing(mas[i + 7][1:])})
+            output_dict.update({mas[i]: self.__none_testing(mas[i + 7][1:])})
         return output_dict

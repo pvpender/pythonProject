@@ -1,12 +1,20 @@
 import tkinter as tk
 import re
+from datetime import datetime, timedelta
 from bs4 import BeautifulSoup
+from Work.Library.standard_functions import Database
 import requests as req
 
 
 class MainWindow:
     def __init__(self):
         pass
+
+
+class NoCountryLink(Exception):
+    def __init__(self):
+        self.message = "No country link in dictionary"
+        super().__init__(self.message)
 
 
 class Parser:
@@ -17,12 +25,16 @@ class Parser:
     def __init__(self):
         self.__page = req.get(self.__url, headers=self.__headers)
         soup = BeautifulSoup(self.__page.text, "lxml")
-        self.__links = [tag.find("a")["href"] for tag in soup.select("td:has(a)")
-                        if tag.find("a")["href"].count("covid-19")]
+        country_names = [tag.find("a").text for tag in soup.select("td:has(a)") if
+                         tag.find("a")["href"].count("covid-19")]
+        country_links = [tag.find("a")["href"] for tag in soup.select("td:has(a)") if
+                         tag.find("a")["href"].count("covid-19")]
+        for i in range(len(country_names)):
+            self.__links.update({country_names[i]: country_links[i]})
 
     __url = "https://gogov.ru/covid-19/world"
     __page = req.Response
-    __links = []
+    __links = {}
     __headers = {
         'Connection': 'keep-alive',
         'Cache-Control': 'max-age=0',
@@ -60,6 +72,32 @@ class Parser:
             output_dict.update({mas[i]: [self.__none_testing(re.search(r"\d+", mas[i + 2])),
                                          self.__none_testing(re.search(r"\d+", mas[i + 7]))]})
         return output_dict
+
+    def get_country_info(self, name: str, database: Database) -> list:
+        """
+        Функция получения подробной информации по стране
+        :param name:
+        :param database:
+        :return:
+        """
+        if name in self.__links:
+            if not database.find_data([0], [str(datetime.now() - timedelta(days=1))[8:10].replace("-", ".") + "." +
+                                            str(datetime.now() - timedelta(days=1))[5:7].replace("-", ".") + "." +
+                                            str(datetime.now() - timedelta(days=1))[2:4].replace("-", ".")]):
+                page = req.get(self.__links[name], headers=self.__headers)
+                soup = BeautifulSoup(page.text, "lxml")
+                mas = soup.table.find_all("td")
+                data = []
+                for i in range(0, len(mas), 4):
+                    data.append([re.search(r"[0-9]+\.[0-9]+\.[0-9]+", str(mas[i])).group(0),
+                                int(re.search(r"[\d+\s]+", str(mas[i+1])).group(0).replace(" ", "")),
+                                int(re.search(r"[\d+\s]+", str(mas[i+2])).group(0).replace(" ", ""))])
+                database.insert_rows(data)
+            else:
+                data = database.find_data()
+            return data
+        else:
+            raise NoCountryLink
 
     def get_info_new_disease(self) -> dict:
         """

@@ -45,6 +45,20 @@ class Database:
         self.__cursor.execute(request)
         self.__connection.commit()
 
+    def insert_rows(self, mas: list):
+        """
+        Добавление строки в базу
+        :param mas (List)
+        :return: None
+        author Moiseev Nicolay
+        """
+        request = f"INSERT INTO {self.__name} {tuple(j for j in self.__columns)} VALUES "
+        for i in range(len(mas) - 1):
+            request += f"{tuple(j for j in mas[i])}, "
+        request += f"{tuple(mas[len(mas)-1])}"
+        self.__cursor.execute(request)
+        self.__connection.commit()
+
     def del_row(self, table_rows: list, mas: list):
         """
         Удаление строки из базы
@@ -56,11 +70,11 @@ class Database:
         request = f"DELETE FROM {self.__name} WHERE "
         for i in range(len(table_rows) - 1):
             request += f"{self.__columns[table_rows[i]]} = {mas[i]} AND"
-        request += f" {self.__columns[table_rows[len(table_rows) - 1]]} = {mas[len(mas) - 1]}"
+        request += f" {self.__columns[table_rows[len(table_rows) - 1]]} = '{mas[len(mas) - 1]}'"
         self.__cursor.execute(request)
         self.__connection.commit()
 
-    def find_data(self, table_rows: list, mas: list) -> list:
+    def find_data(self, table_rows: list = None, mas: list = None) -> list:
         """
         Поиск строк в базе
         :param table_rows:
@@ -68,10 +82,13 @@ class Database:
         :return: Список столбцов с их значениями
         author Moiseev Nicolay
         """
-        request = f"SELECT * FROM {self.__name} WHERE "
-        for i in range(len(table_rows) - 1):
-            request += f"{self.__columns[table_rows[i]]} = {mas[i]} AND"
-        request += f" {self.__columns[table_rows[len(table_rows) - 1]]} = {mas[len(mas) - 1]}"
+        if (table_rows is None) & (mas is None):
+            request = f"SELECT * FROM {self.__name}"
+        else:
+            request = f"SELECT * FROM {self.__name} WHERE "
+            for i in range(len(table_rows) - 1):
+                request += f"{self.__columns[table_rows[i]]} = {mas[i]} AND"
+            request += f" {self.__columns[table_rows[len(table_rows) - 1]]} = '{mas[len(mas) - 1]}'"
         self.__cursor.execute(request)
         data = self.__cursor.fetchall()
         return data

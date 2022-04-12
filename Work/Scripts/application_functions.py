@@ -1,4 +1,5 @@
 import tkinter as tk
+import numpy as np
 import re
 from datetime import datetime, timedelta
 from bs4 import BeautifulSoup
@@ -79,22 +80,29 @@ class Parser:
         :param name:
         :param database:
         :return:
+        author Moiseev Nicolay
         """
         if name in self.__links:
-            if not database.find_data([0], [str(datetime.now() - timedelta(days=1))[8:10].replace("-", ".") + "." +
+            if not database.find_data([0, 1], [name, str(datetime.now() - timedelta(days=1))[8:10].replace("-", ".") + "." +
                                             str(datetime.now() - timedelta(days=1))[5:7].replace("-", ".") + "." +
                                             str(datetime.now() - timedelta(days=1))[2:4].replace("-", ".")]):
                 page = req.get(self.__links[name], headers=self.__headers)
                 soup = BeautifulSoup(page.text, "lxml")
                 mas = soup.table.find_all("td")
                 data = []
+                data_base = []
                 for i in range(0, len(mas), 4):
                     data.append([re.search(r"[0-9]+\.[0-9]+\.[0-9]+", str(mas[i])).group(0),
                                 int(re.search(r"[\d+\s]+", str(mas[i+1])).group(0).replace(" ", "")),
                                 int(re.search(r"[\d+\s]+", str(mas[i+2])).group(0).replace(" ", ""))])
-                database.insert_rows(data)
+                    data_base.append([name, re.search(r"[0-9]+\.[0-9]+\.[0-9]+", str(mas[i])).group(0),
+                                int(re.search(r"[\d+\s]+", str(mas[i+1])).group(0).replace(" ", "")),
+                                int(re.search(r"[\d+\s]+", str(mas[i+2])).group(0).replace(" ", ""))])
+                database.insert_rows(data_base)
             else:
-                data = database.find_data()
+                r = database.find_data([0], [name])
+                data_np = np.array(r)
+                data = data_np[0:, 1:].tolist()
             return data
         else:
             raise NoCountryLink

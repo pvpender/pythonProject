@@ -70,8 +70,8 @@ class Parser:
         mas = list(map(str, soup.tbody.text.split("\n")))[2:]
         output_dict = {}
         for i in range(0, len(mas), 16):
-            output_dict.update({mas[i]: [self.__none_testing(re.search(r"\d+", mas[i + 2])),
-                                         self.__none_testing(re.search(r"\d+", mas[i + 7]))]})
+            output_dict.update({mas[i]: [int(self.__none_testing(re.search(r"[\d \s]+", mas[i + 2])).replace(" ", "")),
+                                         int(self.__none_testing(re.search(r"[\d \s]+", mas[i + 7])).replace(" ", ""))]})
         return output_dict
 
     def get_country_info(self, name: str, database: Database) -> list:
@@ -86,19 +86,37 @@ class Parser:
             if not database.find_data([0, 1], [name, str(datetime.now() - timedelta(days=1))[8:10].replace("-", ".") + "." +
                                             str(datetime.now() - timedelta(days=1))[5:7].replace("-", ".") + "." +
                                             str(datetime.now() - timedelta(days=1))[2:4].replace("-", ".")]):
-                page = req.get(self.__links[name], headers=self.__headers)
+                if name != "Россия":
+                    page = req.get(self.__links[name], headers=self.__headers)
+                else:
+                    page = req.get("https://gogov.ru/covid-19/msk#data", headers=self.__headers)
                 soup = BeautifulSoup(page.text, "lxml")
                 mas = soup.table.find_all("td")
                 data = []
                 data_base = []
-                for i in range(0, len(mas), 4):
-                    data.append([re.search(r"[0-9]+\.[0-9]+\.[0-9]+", str(mas[i])).group(0),
-                                int(re.search(r"[\d+\s]+", str(mas[i+1])).group(0).replace(" ", "")),
-                                int(re.search(r"[\d+\s]+", str(mas[i+2])).group(0).replace(" ", ""))])
-                    data_base.append([name, re.search(r"[0-9]+\.[0-9]+\.[0-9]+", str(mas[i])).group(0),
-                                int(re.search(r"[\d+\s]+", str(mas[i+1])).group(0).replace(" ", "")),
-                                int(re.search(r"[\d+\s]+", str(mas[i+2])).group(0).replace(" ", ""))])
-                database.insert_rows(data_base)
+                if database.find_data([0], [name]):
+                    time = database.find_data([0], [name])[0][1]
+                    for i in range(0, len(mas), 4):
+                        if not re.search(r"[0-9]+\.[0-9]+\.[0-9]+", str(mas[i])).group(0) == time:
+                            data_base.append([name, re.search(r"[0-9]+\.[0-9]+\.[0-9]+", str(mas[i])).group(0),
+                                            int(re.search(r"[\d+\s]+", str(mas[i + 1])).group(0).replace(" ", "")),
+                                            int(re.search(r"[\d+\s]+", str(mas[i + 2])).group(0).replace(" ", ""))])
+                        else:
+                            break
+                    database.insert_rows(data_base)
+                    r = database.find_data([0], [name])
+                    data_np = np.array(r)
+                    data_np[:, 0].asort()
+                    data = data_np[0:, 1:].tolist()
+                else:
+                    for i in range(0, len(mas), 4):
+                        data.append([re.search(r"[0-9]+\.[0-9]+\.[0-9]+", str(mas[i])).group(0),
+                                    int(re.search(r"[\d+\s]+", str(mas[i+1])).group(0).replace(" ", "")),
+                                    int(re.search(r"[\d+\s]+", str(mas[i+2])).group(0).replace(" ", ""))])
+                        data_base.append([name, re.search(r"[0-9]+\.[0-9]+\.[0-9]+", str(mas[i])).group(0),
+                                    int(re.search(r"[\d+\s]+", str(mas[i+1])).group(0).replace(" ", "")),
+                                    int(re.search(r"[\d+\s]+", str(mas[i+2])).group(0).replace(" ", ""))])
+                    database.insert_rows(data_base)
             else:
                 r = database.find_data([0], [name])
                 data_np = np.array(r)

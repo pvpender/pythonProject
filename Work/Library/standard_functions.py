@@ -69,7 +69,7 @@ class Database:
         """
         request = f"DELETE FROM {self.__name} WHERE "
         for i in range(len(table_rows) - 1):
-            request += f"{self.__columns[table_rows[i]]} = {mas[i]} AND"
+            request += f"{self.__columns[table_rows[i]]} = '{mas[i]}' AND"
         request += f" {self.__columns[table_rows[len(table_rows) - 1]]} = '{mas[len(mas) - 1]}'"
         self.__cursor.execute(request)
         self.__connection.commit()

@@ -13,9 +13,35 @@ class MainWindow:
 
 
 class NoCountryLink(Exception):
+    """
+    Класс ошибки
+    """
     def __init__(self):
         self.message = "No country link in dictionary"
         super().__init__(self.message)
+
+
+class Sorter:
+    """
+    Клас сортировщика
+    """
+    @staticmethod
+    def sorting(table: int, data: list):
+        """
+        Сортировка количества заболеваний/смертей по дате
+        :param table: Номер столбца в котором находятся даты
+        :param data: Массив данных
+        :return: Отсортированный массив данных
+        author Moiseev Nicolay
+        """
+        time = datetime.now() - timedelta(days=1)
+        p = (time - datetime.strptime(data[0][table], "%d.%m.%y")).days
+        if (time - datetime.strptime(data[len(data) - p][table], "%d.%m.%y")).days < p:
+            print((time - datetime.strptime(data[len(data) - p][table], "%d.%m.%y")).days)
+            new_data = data[len(data) - p:] + data[:len(data) - p]
+        else:
+            new_data = data
+        return new_data
 
 
 class Parser:
@@ -77,9 +103,9 @@ class Parser:
     def get_country_info(self, name: str, database: Database) -> list:
         """
         Функция получения подробной информации по стране
-        :param name:
-        :param database:
-        :return:
+        :param name: Название страны
+        :param database: Класс базы данных
+        :return: Массив массивов
         author Moiseev Nicolay
         """
         if name in self.__links:
@@ -95,7 +121,7 @@ class Parser:
                 data = []
                 data_base = []
                 if database.find_data([0], [name]):
-                    time = database.find_data([0], [name])[0][1]
+                    time = Sorter.sorting(1, database.find_data([0], [name]))[0][1]
                     for i in range(0, len(mas), 4):
                         if not re.search(r"[0-9]+\.[0-9]+\.[0-9]+", str(mas[i])).group(0) == time:
                             data_base.append([name, re.search(r"[0-9]+\.[0-9]+\.[0-9]+", str(mas[i])).group(0),
@@ -103,10 +129,12 @@ class Parser:
                                             int(re.search(r"[\d+\s]+", str(mas[i + 2])).group(0).replace(" ", ""))])
                         else:
                             break
-                    database.insert_rows(data_base)
+                    try:
+                        database.insert_rows(data_base)
+                    except IndexError:
+                        print("Не хватает информации на сайте")
                     r = database.find_data([0], [name])
                     data_np = np.array(r)
-                    data_np[:, 0].asort()
                     data = data_np[0:, 1:].tolist()
                 else:
                     for i in range(0, len(mas), 4):
@@ -116,14 +144,54 @@ class Parser:
                         data_base.append([name, re.search(r"[0-9]+\.[0-9]+\.[0-9]+", str(mas[i])).group(0),
                                     int(re.search(r"[\d+\s]+", str(mas[i+1])).group(0).replace(" ", "")),
                                     int(re.search(r"[\d+\s]+", str(mas[i+2])).group(0).replace(" ", ""))])
-                    database.insert_rows(data_base)
+                    try:
+                        database.insert_rows(data_base)
+                    except IndexError:
+                        print("Не хватает информации на сайте")
             else:
                 r = database.find_data([0], [name])
                 data_np = np.array(r)
                 data = data_np[0:, 1:].tolist()
-            return data
+            return Sorter.sorting(0, data)
         else:
             raise NoCountryLink
+
+    def get_world_info(self, database: Database):
+        """
+        Получить статистику заражений/смертей по миру
+        :param database: База данных
+        :return: Массив массивом
+        author Moiseev Nicolay
+        """
+        if not database.find_data([0], [str(datetime.now() - timedelta(days=1))[8:10].replace("-", ".") + "." +
+                                            str(datetime.now() - timedelta(days=1))[5:7].replace("-", ".") + "." +
+                                            str(datetime.now() - timedelta(days=1))[2:4].replace("-", ".")]):
+            soup = BeautifulSoup(self.__page.text, "lxml")
+            divs = soup.find("div", {"class": "table-box-400"})
+            mas = list(map(str, divs.text.split("\n")))[3:]
+            data = []
+            if database.find_data():
+                time = Sorter.sorting(0, database.find_data())[0][0]
+                for i in range(len(mas) - 4):
+                    if not mas[i][:8] == time:
+                        n = re.findall(r"[\d+ \s]+", mas[i][8:])
+                        data.append([mas[i][:8], n[0].replace(" ", ""), n[2].replace(" ", "")])
+                    else:
+                        break
+                try:
+                    database.insert_rows(data)
+                except IndexError:
+                    print("На сайте недостаточно данных")
+                    data = database.find_data()
+            else:
+                for i in range(len(mas) - 4):
+                    n = re.findall(r"[\d+ \s]+", mas[i][8:])
+                    data.append([mas[i][:8], n[0].replace(" ", ""), n[2].replace(" ", "")])
+                data.append(["01.02.20", "12038", "259"])
+                database.insert_rows(data)
+        else:
+            data = database.find_data()
+        return Sorter.sorting(0, data)
 
     def get_info_new_disease(self) -> dict:
         """

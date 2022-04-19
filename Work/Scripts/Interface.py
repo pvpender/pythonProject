@@ -12,7 +12,7 @@ class ListInterface(Frame):
         index = sender.curselection()
         num = sender.get(index)
 
-        self.var.set("Заражений за сегодня: "+self.inf.get(num)[0]+"; Смертей за сегодня: "+self.inf.get(num)[1])
+        self.var.set("Заражений за сегодня: "+str(self.inf.get(num)[0])+"; Смертей за сегодня: "+str(self.inf.get(num)[1]))
 
     def initUI(self):
         self.master.title("Информация по странам")

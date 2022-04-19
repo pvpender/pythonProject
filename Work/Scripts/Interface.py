@@ -1,6 +1,6 @@
 from tkinter import Tk, Listbox, StringVar, BOTH, END
 from tkinter.ttk import Frame, Label
-
+""" author Kamakin Andrey """
 class ListInterface(Frame):
     def __init__(self, info: dict):
         super().__init__()

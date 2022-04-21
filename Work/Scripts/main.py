@@ -1,4 +1,6 @@
 from Work.Library.standard_functions import *
+from Interface import *
+from tkinter import Tk
 from application_functions import *
 
 if __name__ == "__main__":

@@ -36,9 +36,12 @@ class Sorter:
         """
         time = datetime.now() - timedelta(days=1)
         p = (time - datetime.strptime(data[0][table], "%d.%m.%y")).days
-        if (time - datetime.strptime(data[len(data) - abs(p)][table], "%d.%m.%y")).days < p:
-            print((time - datetime.strptime(data[len(data) - abs(p)][table], "%d.%m.%y")).days)
-            new_data = data[len(data) - abs(p):] + data[:len(data) - abs(p)]
+        i = p
+        while (i != 0) & (i > 0):
+            if (time - datetime.strptime(data[len(data) - abs(i)][table], "%d.%m.%y")).days < p:
+                new_data = data[len(data) - i:] + data[:len(data) - i]
+                break
+            i -= 1
         else:
             new_data = data
         return new_data

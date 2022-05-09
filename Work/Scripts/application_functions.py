@@ -2,6 +2,8 @@ import tkinter as tk
 import numpy as np
 import re
 from datetime import datetime, timedelta
+import os
+import pandas as pd
 from bs4 import BeautifulSoup
 from Work.Library.standard_functions import Database
 import requests as req
@@ -16,15 +18,80 @@ class NoCountryLink(Exception):
     """
     Класс ошибки
     """
+
     def __init__(self):
         self.message = "No country link in dictionary"
         super().__init__(self.message)
+
+
+class Saver:
+    """
+    Класс сохранителя отчётов
+    """
+    __world_text_path = "../Notes/world.csv"
+    __countries_text_path = "../Notes/"
+
+    def __init__(self):
+        pass
+
+    def save_world_data(self, data: dict):
+        """
+        Сохранение таблицы заражений и смертей по мтру
+        :param data: словарь с данными о заражениях и смертях по миру
+        :return: pd.DataFrame
+        author Moiseev Nicolay
+        """
+        df = pd.DataFrame(data)
+        df = df.set_axis(["disease", "dies"], axis="index")
+        df.to_csv(self.__world_text_path)
+        return df
+
+    def save_country_data(self, country_name: str, data: list):
+        """
+        Сохранение таблицы заражений и смертей для отдельной страны
+        :param country_name: Название страны для которой даётся статистика
+        :param data: Список списков вида [[Дата, Заражения, Смерти], ...]
+        :return: pd.DataFrame
+        """
+        df = pd.DataFrame(data)
+        df = df.set_axis(["Date", "Disease", "Dies"], axis="columns")
+        df.to_csv(self.__countries_text_path + country_name + ".csv")
+        return df
+
+    def unite_data(self, list_data: list, list_names: list):
+        """
+        Сохранение объединённой таблицы заражений и смертей
+        :param list_data: Список списков вида [[[Дата, Заражения, Смерти], ...], [[Дата, Заражения, Смерти], ...] ...]
+        :param list_names: Список названий стран для которых даётся статистика
+        :return: pd.DataFrame
+        """
+        mas = []
+        for i in list_data:
+            df = pd.DataFrame(i)
+            df = df.set_axis(["Date", "Disease", "Dies"], axis="columns")
+            mas.append(df)
+        df = pd.concat(mas, keys=list_names, names=["Country"])
+        df.to_csv(self.__countries_text_path + "unite.csv")
+        return df
+
+    def mean_unite_data(self, dataframe: pd.DataFrame):
+        """
+
+        :param dataframe: Объединённая таблица pd.DataFrame с данными
+        :return: pd.DataFrame
+        """
+        dataframe = dataframe.astype({"Disease": "int64", "Dies": "int64"})
+        df = pd.pivot_table(dataframe, values=["Disease", "Dies"],
+                            index="Date", aggfunc={"Disease": np.mean, "Dies": np.mean})
+        df.to_csv(self.__countries_text_path + "mean_unite.csv")
+        return df
 
 
 class Sorter:
     """
     Клас сортировщика
     """
+
     @staticmethod
     def sorting(table: int, data: list):
         """
@@ -34,7 +101,7 @@ class Sorter:
         :return: Отсортированный массив данных
         author Moiseev Nicolay
         """
-        time = datetime.now() - timedelta(days=1)
+        time = datetime.now()
         p = (time - datetime.strptime(data[0][table], "%d.%m.%y")).days
         i = p
         while (i != 0) & (i > 0):
@@ -100,7 +167,8 @@ class Parser:
         output_dict = {}
         for i in range(0, len(mas), 16):
             output_dict.update({mas[i]: [int(self.__none_testing(re.search(r"[\d \s]+", mas[i + 2])).replace(" ", "")),
-                                         int(self.__none_testing(re.search(r"[\d \s]+", mas[i + 7])).replace(" ", ""))]})
+                                         int(self.__none_testing(re.search(r"[\d \s]+", mas[i + 7])).replace(" ",
+                                                                                                             ""))]})
         return output_dict
 
     def get_country_info(self, name: str, database: Database) -> list:
@@ -112,9 +180,10 @@ class Parser:
         author Moiseev Nicolay
         """
         if name in self.__links:
-            if not database.find_data([0, 1], [name, str(datetime.now() - timedelta(days=1))[8:10].replace("-", ".") + "." +
-                                            str(datetime.now() - timedelta(days=1))[5:7].replace("-", ".") + "." +
-                                            str(datetime.now() - timedelta(days=1))[2:4].replace("-", ".")]):
+            if not database.find_data([0, 1],
+                                      [name, str(datetime.now() - timedelta(days=1))[8:10].replace("-", ".") + "." +
+                                             str(datetime.now() - timedelta(days=1))[5:7].replace("-", ".") + "." +
+                                             str(datetime.now() - timedelta(days=1))[2:4].replace("-", ".")]):
                 if name != "Россия":
                     page = req.get(self.__links[name], headers=self.__headers)
                 else:
@@ -128,8 +197,8 @@ class Parser:
                     for i in range(0, len(mas), 4):
                         if not re.search(r"[0-9]+\.[0-9]+\.[0-9]+", str(mas[i])).group(0) == time:
                             data_base.append([name, re.search(r"[0-9]+\.[0-9]+\.[0-9]+", str(mas[i])).group(0),
-                                            int(re.search(r"[\d+\s]+", str(mas[i + 1])).group(0).replace(" ", "")),
-                                            int(re.search(r"[\d+\s]+", str(mas[i + 2])).group(0).replace(" ", ""))])
+                                              int(re.search(r"[\d+\s]+", str(mas[i + 1])).group(0).replace(" ", "")),
+                                              int(re.search(r"[\d+\s]+", str(mas[i + 2])).group(0).replace(" ", ""))])
                         else:
                             break
                     try:
@@ -142,11 +211,11 @@ class Parser:
                 else:
                     for i in range(0, len(mas), 4):
                         data.append([re.search(r"[0-9]+\.[0-9]+\.[0-9]+", str(mas[i])).group(0),
-                                    int(re.search(r"[\d+\s]+", str(mas[i+1])).group(0).replace(" ", "")),
-                                    int(re.search(r"[\d+\s]+", str(mas[i+2])).group(0).replace(" ", ""))])
+                                     int(re.search(r"[\d+\s]+", str(mas[i + 1])).group(0).replace(" ", "")),
+                                     int(re.search(r"[\d+\s]+", str(mas[i + 2])).group(0).replace(" ", ""))])
                         data_base.append([name, re.search(r"[0-9]+\.[0-9]+\.[0-9]+", str(mas[i])).group(0),
-                                    int(re.search(r"[\d+\s]+", str(mas[i+1])).group(0).replace(" ", "")),
-                                    int(re.search(r"[\d+\s]+", str(mas[i+2])).group(0).replace(" ", ""))])
+                                          int(re.search(r"[\d+\s]+", str(mas[i + 1])).group(0).replace(" ", "")),
+                                          int(re.search(r"[\d+\s]+", str(mas[i + 2])).group(0).replace(" ", ""))])
                     try:
                         database.insert_rows(data_base)
                     except IndexError:
@@ -167,8 +236,8 @@ class Parser:
         author Moiseev Nicolay
         """
         if not database.find_data([0], [str(datetime.now() - timedelta(days=1))[8:10].replace("-", ".") + "." +
-                                            str(datetime.now() - timedelta(days=1))[5:7].replace("-", ".") + "." +
-                                            str(datetime.now() - timedelta(days=1))[2:4].replace("-", ".")]):
+                                        str(datetime.now() - timedelta(days=1))[5:7].replace("-", ".") + "." +
+                                        str(datetime.now() - timedelta(days=1))[2:4].replace("-", ".")]):
             soup = BeautifulSoup(self.__page.text, "lxml")
             divs = soup.find("div", {"class": "table-box-400"})
             mas = list(map(str, divs.text.split("\n")))[3:]

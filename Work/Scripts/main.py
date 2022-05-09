@@ -11,10 +11,11 @@ if __name__ == "__main__":
     disease_base = Database("../Data/disease1.db", "info", ["country", "date", "disease", "dies"])
     world_base = Database("../Data/world.db", "info", ["date", "disease", "dies"])
     par = Parser()
+    print()
     print(par.get_info())
     print(par.get_country_info("Россия", disease_base))
     print(par.get_country_info("Германия", disease_base))
-
+    s = Saver()
     '''print(Sorter.sorting(1, disease_base.find_data([0], ["Германия"])))
     mas_y = pd.date_range(start="2020-02-01", end="2022-04-16").to_pydatetime().tolist()
     rmas = np.array(par.get_country_info("Россия", disease_base))

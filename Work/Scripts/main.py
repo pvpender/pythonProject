@@ -7,6 +7,8 @@ from application_functions import *
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
+from Work.Scripts.Saving import *
+
 if __name__ == "__main__":
     disease_base = Database("../Data/disease1.db", "info", ["country", "date", "disease", "dies"])
     world_base = Database("../Data/world.db", "info", ["date", "disease", "dies"])

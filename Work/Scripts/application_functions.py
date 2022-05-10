@@ -1,117 +1,11 @@
-import tkinter as tk
 import numpy as np
 import re
 from datetime import datetime, timedelta
-import os
-import pandas as pd
 from bs4 import BeautifulSoup
 from Work.Library.standard_functions import Database
+from Work.Scripts.Sorting import *
+from Work.Scripts.Exceptions import *
 import requests as req
-
-
-class MainWindow:
-    def __init__(self):
-        pass
-
-
-class NoCountryLink(Exception):
-    """
-    Класс ошибки
-    """
-
-    def __init__(self):
-        self.message = "No country link in dictionary"
-        super().__init__(self.message)
-
-
-class Saver:
-    """
-    Класс сохранителя отчётов
-    """
-    __world_text_path = "../Notes/world.csv"
-    __countries_text_path = "../Notes/"
-
-    def __init__(self):
-        pass
-
-    def save_world_data(self, data: dict):
-        """
-        Сохранение таблицы заражений и смертей по мтру
-        :param data: словарь с данными о заражениях и смертях по миру
-        :return: pd.DataFrame
-        author Moiseev Nicolay
-        """
-        df = pd.DataFrame(data)
-        df = df.set_axis(["disease", "dies"], axis="index")
-        df.to_csv(self.__world_text_path)
-        return df
-
-    def save_country_data(self, country_name: str, data: list):
-        """
-        Сохранение таблицы заражений и смертей для отдельной страны
-        :param country_name: Название страны для которой даётся статистика
-        :param data: Список списков вида [[Дата, Заражения, Смерти], ...]
-        :return: pd.DataFrame
-        """
-        df = pd.DataFrame(data)
-        df = df.set_axis(["Date", "Disease", "Dies"], axis="columns")
-        df.to_csv(self.__countries_text_path + country_name + ".csv")
-        return df
-
-    def unite_data(self, list_data: list, list_names: list):
-        """
-        Сохранение объединённой таблицы заражений и смертей
-        :param list_data: Список списков вида [[[Дата, Заражения, Смерти], ...], [[Дата, Заражения, Смерти], ...] ...]
-        :param list_names: Список названий стран для которых даётся статистика
-        :return: pd.DataFrame
-        """
-        mas = []
-        for i in list_data:
-            df = pd.DataFrame(i)
-            df = df.set_axis(["Date", "Disease", "Dies"], axis="columns")
-            mas.append(df)
-        df = pd.concat(mas, keys=list_names, names=["Country"])
-        df.to_csv(self.__countries_text_path + "unite.csv")
-        return df
-
-    def mean_unite_data(self, dataframe: pd.DataFrame):
-        """
-
-        :param dataframe: Объединённая таблица pd.DataFrame с данными
-        :return: pd.DataFrame
-        """
-        dataframe = dataframe.astype({"Disease": "int64", "Dies": "int64"})
-        df = pd.pivot_table(dataframe, values=["Disease", "Dies"],
-                            index="Date", aggfunc={"Disease": np.mean, "Dies": np.mean})
-        df.to_csv(self.__countries_text_path + "mean_unite.csv")
-        return df
-
-
-class Sorter:
-    """
-    Клас сортировщика
-    """
-
-    @staticmethod
-    def sorting(table: int, data: list):
-        """
-        Сортировка количества заболеваний/смертей по дате
-        :param table: Номер столбца в котором находятся даты
-        :param data: Массив данных
-        :return: Отсортированный массив данных
-        author Moiseev Nicolay
-        """
-        time = datetime.now()
-        p = (time - datetime.strptime(data[0][table], "%d.%m.%y")).days
-        i = p
-        while (i != 0) & (i > 0):
-            if (time - datetime.strptime(data[len(data) - abs(i)][table], "%d.%m.%y")).days < p:
-                new_data = data[len(data) - i:] + data[:len(data) - i]
-                break
-            i -= 1
-        else:
-            new_data = data
-        return new_data
 
 
 class Parser:

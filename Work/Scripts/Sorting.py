@@ -15,6 +15,17 @@ class Sorter:
         :return: Отсортированный массив данных
         author Moiseev Nicolay
         """
+        return sorted(data, key=lambda x: datetime.strptime(x[table], "%d.%m.%y"), reverse=True)
+
+    @staticmethod
+    def old_sorting(table: int, data: list):
+        """
+        Сортировка количества заболеваний/смертей по дате
+        :param table: Номер столбца в котором находятся даты
+        :param data: Массив данных
+        :return: Отсортированный массив данных
+        author Moiseev Nicolay
+        """
         time = datetime.now()
         p = (time - datetime.strptime(data[0][table], "%d.%m.%y")).days
         i = p

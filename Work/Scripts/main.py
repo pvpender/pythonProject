@@ -1,3 +1,4 @@
+import datetime
 import time
 
 from Work.Library.standard_functions import *
@@ -18,6 +19,20 @@ if __name__ == "__main__":
     print(par.get_country_info("Россия", disease_base))
     print(par.get_country_info("Германия", disease_base))
     s = Saver()
+    print(par.get_country_info("Россия", disease_base))
+
+    """def sr(mas, a):
+        x = []
+        print(len(mas))
+        for i in range(len(mas) - 2, -1, -1):
+            x.append(int(mas[i][a]) - int(mas[i+1][a]))
+        print(len(x))
+        mas_y = pd.date_range(start="2020-03-03", end="2022-05-24").to_pydatetime().tolist()
+        plt.plot(mas_y, x)
+        plt.show()
+
+
+    sr(par.get_country_info("Россия", disease_base), 2)"""
     '''print(Sorter.sorting(1, disease_base.find_data([0], ["Германия"])))
     mas_y = pd.date_range(start="2020-02-01", end="2022-04-16").to_pydatetime().tolist()
     rmas = np.array(par.get_country_info("Россия", disease_base))
@@ -38,7 +53,7 @@ if __name__ == "__main__":
     # plt.bar(mas_y, y[::-1])
     plt.title("Всего заражений к текущему моменту")
 
-    plt.show()'''
+    plt.show()
 
     root = Tk()
     inf=par.get_info()
@@ -48,4 +63,7 @@ if __name__ == "__main__":
     f.close()
     root.geometry(geom)
     root.mainloop()
+   '''
+
+
 

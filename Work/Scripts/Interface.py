@@ -14,7 +14,7 @@ from matplotlib.backends.backend_tkagg import (
 import matplotlib.pyplot as plt
 
 
-class App(tk.Tk):
+class Graphics(tk.Tk):
     def __init__(self, coutry: str, typef: str):
         super().__init__()
         self.title('Статистика по стране')
@@ -22,31 +22,55 @@ class App(tk.Tk):
         self.type = typef
         disease_base = Database("../Data/disease1.db", "info", ["country", "date", "disease", "dies"])
         par = Parser()
-        info = par.get_country_info(str(coutry), disease_base)
-        info.reverse()
-        dates1 = [item[0] for item in info]
-        dates = dates = pd.date_range(start=datetime.strptime(dates1[0], "%d.%m.%y"), end=datetime.strptime(dates1[len(dates1)-1], "%d.%m.%y")).to_pydatetime().tolist()
-        if typef == "disease":
-            stats = [int(item[1]) for item in info]
-            typef = 'Количество заболевших'
-        elif typef == "dies":
-            stats = [int(item[2]) for item in info]
-            typef = 'Количество умерших'
-        figure = Figure(figsize=(6, 4), dpi=100)
-        figure_canvas = FigureCanvasTkAgg(figure, self)
-        NavigationToolbar2Tk(figure_canvas, self)
-        axes = figure.add_subplot()
-        axes.plot(dates, stats)
-        axes.set_title(typef + ' по стране ' + coutry)
-        axes.set_ylabel('')
-        figure_canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
-
+        flag=TRUE
+        try:
+            info = par.get_country_info(str(coutry), disease_base)
+        except NoCountryLink:
+            flag=FALSE
+        if flag:
+            info.reverse()
+            dates1 = [item[0] for item in info]
+            dates = pd.date_range(start=datetime.strptime(dates1[0], "%d.%m.%y"),
+                                  end=datetime.strptime(dates1[len(dates1) - 1],
+                                                        "%d.%m.%y")).to_pydatetime().tolist()
+            if typef == "disease":
+                stats = [int(item[1]) for item in info]
+                typef = 'Количество заболевших'
+            elif typef == "dies":
+                stats = [int(item[2]) for item in info]
+                typef = 'Количество умерших'
+            elif typef == "morediseases":
+                dates.pop(0)
+                dates.pop()
+                prestats = [int(item[1]) for item in info]
+                stats=[]
+                for i in range(1, len(prestats)-1):
+                    stats.append(prestats[i]-prestats[i-1])
+                typef="Прирост заражений"
+            elif typef=="moredies":
+                dates.pop(0)
+                dates.pop()
+                prestats = [int(item[2]) for item in info]
+                stats=[]
+                for i in range(1, len(prestats)-1):
+                    stats.append(prestats[i]-prestats[i-1])
+                typef="Прирост смертей"
+            figure = Figure(figsize=(6, 4), dpi=100)
+            canvas = FigureCanvasTkAgg(figure, self)
+            NavigationToolbar2Tk(canvas, self)
+            gr = figure.add_subplot()
+            gr.plot(dates, stats)
+            gr.set_title(typef + ' по стране ' + coutry)
+            gr.set_ylabel('')
+            canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
+        else:
+            label = Label(self, text="Отсутствует информация по стране " + coutry)
+            label.pack()
     @staticmethod
     def show(country, typef):
-        app = App(country, typef)
-        app.geometry('1200x720')
-        app.mainloop()
-
+        gr = Graphics(country, typef)
+        gr.geometry('1200x720')
+        gr.mainloop()
 
 
 class ListInterface(Frame):

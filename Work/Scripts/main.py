@@ -10,16 +10,11 @@ import pandas as pd
 import numpy as np
 from Work.Scripts.Saving import *
 
+""" authors: Moiseev Nikolay and Addrey Kamakin """
 if __name__ == "__main__":
     disease_base = Database("../Data/disease1.db", "info", ["country", "date", "disease", "dies"])
     world_base = Database("../Data/world.db", "info", ["date", "disease", "dies"])
     par = Parser()
-    print()
-    print(par.get_info())
-    print(par.get_country_info("Россия", disease_base))
-    print(par.get_country_info("Германия", disease_base))
-    s = Saver()
-    print(par.get_country_info("Россия", disease_base))
 
     """def sr(mas, a):
         x = []
@@ -54,16 +49,14 @@ if __name__ == "__main__":
     plt.title("Всего заражений к текущему моменту")
 
     plt.show()
-
+'''
     root = Tk()
-    inf=par.get_info()
-    ex = ListInterface(inf)
+    inf = par.get_info()
+    ex = mainInterface(inf, disease_base, par)
     f = open("config.txt", "r")
     geom = f.read(7)
     f.close()
     root.geometry(geom)
     root.mainloop()
-   '''
-
 
 

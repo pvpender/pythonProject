@@ -83,6 +83,8 @@ class Parser:
                 else:
                     page = req.get("https://gogov.ru/covid-19/msk#data", headers=self.__headers)
                 soup = BeautifulSoup(page.text, "lxml")
+                if soup.table is None:
+                    raise TooMoreRequests
                 mas = soup.table.find_all("td")
                 data = []
                 data_base = []

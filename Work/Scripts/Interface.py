@@ -12,7 +12,7 @@ from matplotlib.backends.backend_tkagg import (
 
 import matplotlib.pyplot as plt
 
-
+""" author Addrey Kamakin """
 class Graphics(tk.Tk):
     def __init__(self, coutry: str, typef: str, disease_base, par):
         super().__init__()

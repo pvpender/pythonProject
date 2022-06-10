@@ -7,13 +7,12 @@ if __name__ == "__main__":
     world_base = Database("../Data/world.db", "info", ["date", "disease", "dies"])
     par = Parser()
     root = Tk()
+    saver = Saver()
     inf = par.get_info()
-    ex = mainInterface(inf, disease_base, par)
+    ex = MainInterface(inf, disease_base, par, saver)
     f = open("config.txt", "r")
     geom = f.read()
     f.close()
     root.geometry(geom)
     root.resizable(False, False)
     root.mainloop()
-
-

@@ -6,8 +6,8 @@ class Saver:
     """
     Класс сохранителя отчётов
     """
-    __world_text_path = "../Notes/world.csv"
-    __countries_text_path = "../Notes/"
+    __world_text_path = "../Output/world.csv"
+    __countries_text_path = "../Output/"
 
     def __init__(self):
         pass
@@ -36,9 +36,10 @@ class Saver:
         df.to_csv(self.__countries_text_path + country_name + ".csv")
         return df
 
-    def unite_data(self, list_data: list, list_names: list):
+    def unite_data(self, list_columns: list, list_data: list, list_names: list):
         """
         Сохранение объединённой таблицы заражений и смертей
+        :param list_columns:
         :param list_data: Список списков вида [[[Дата, Заражения, Смерти], ...], [[Дата, Заражения, Смерти], ...] ...]
         :param list_names: Список названий стран для которых даётся статистика
         :return: pd.DataFrame
@@ -46,10 +47,10 @@ class Saver:
         mas = []
         for i in list_data:
             df = pd.DataFrame(i)
-            df = df.set_axis(["Date", "Disease", "Dies"], axis="columns")
+            df = df.set_axis(["Date"] + list_columns, axis="columns")
             mas.append(df)
         df = pd.concat(mas, keys=list_names, names=["Country"])
-        df.to_csv(self.__countries_text_path + "unite.csv")
+        df.to_csv(self.__countries_text_path + f"unite_{[i for i in list_columns]}_{[i for i in list_names]}.csv")
         return df
 
     def mean_unite_data(self, dataframe: pd.DataFrame):

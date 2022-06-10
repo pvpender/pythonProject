@@ -1,6 +1,6 @@
 import numpy as np
 import re
-from datetime import datetime, timedelta
+from datetime import timedelta
 from bs4 import BeautifulSoup
 from Work.Library.standard_functions import Database
 from Work.Scripts.Sorting import *
@@ -74,10 +74,9 @@ class Parser:
         author Moiseev Nicolay
         """
         if name in self.__links:
-            if not database.find_data([0, 1],
-                                      [name, str(datetime.now() - timedelta(days=1))[8:10].replace("-", ".") + "." +
-                                             str(datetime.now() - timedelta(days=1))[5:7].replace("-", ".") + "." +
-                                             str(datetime.now() - timedelta(days=1))[2:4].replace("-", ".")]):
+            if not database.find_data([0, 1], [name, str(datetime.now() - timedelta(days=1))[8:10].replace("-", ".")
+                                      + "." + str(datetime.now() - timedelta(days=1))[5:7].replace("-", ".") + "." +
+                                      str(datetime.now() - timedelta(days=1))[2:4].replace("-", ".")]):
                 if name != "Россия":
                     page = req.get(self.__links[name], headers=self.__headers)
                 else:
@@ -122,7 +121,13 @@ class Parser:
                 data = data_np[0:, 1:].tolist()
             return Sorter.sorting(0, data)
         else:
-            raise NoCountryLink
+            if not database.find_data([0], [name]):
+                raise NoCountryLink
+            else:
+                r = database.find_data([0], [name])
+                data_np = np.array(r)
+                data = data_np[0:, 1:].tolist()
+                return Sorter.sorting(0, data)
 
     def get_world_info(self, database: Database):
         """

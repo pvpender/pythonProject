@@ -61,8 +61,16 @@ class Graphics(tk.Tk):
             gr.set_ylabel('')
             canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
         else:
-            label = Label(self, text="Отсутствует информация по стране " + coutry)
-            label.pack()
+            if coutry is None:
+                label = Label(self, text="Вы не выбрали страну!", font=("Courier", 30))
+                label.pack(pady=300)
+            else:
+                label = Label(self, text=f"Отсутствует информация по стране {coutry}! \n Хотите добавить данные "
+                                         f"вручную?", font=("Courier", 30))
+                label.pack()
+                btn = Button(self, text="Добавить", font=("Arial", 20), width=30, height=1)
+                btn.pack()
+
 
     @staticmethod
     def show(country, typef, disease_base, par):

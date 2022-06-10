@@ -13,6 +13,7 @@ if __name__ == "__main__":
     geom = f.read()
     f.close()
     root.geometry(geom)
+    root.resizable(False, False)
     root.mainloop()
 
 

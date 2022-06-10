@@ -71,6 +71,7 @@ class Graphics(tk.Tk):
                 btn = Button(self, text="Добавить", font=("Arial", 20), width=30, height=1)
                 btn.pack()
 
+
     @staticmethod
     def show(country, typef, disease_base, par):
         gr = Graphics(country, typef, disease_base, par)

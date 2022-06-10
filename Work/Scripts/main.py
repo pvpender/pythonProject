@@ -62,6 +62,7 @@ if __name__ == "__main__":
     geom = f.read(7)
     f.close()
     root.geometry(geom)
+    root.resizable(False, False)
     root.mainloop()
    '''
 

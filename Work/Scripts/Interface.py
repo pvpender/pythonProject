@@ -152,7 +152,7 @@ class Graphics(tk.Tk):
                 moredis = []
                 for i in range(1, len(predis) - 1):
                     moredis.append(predis[i] - predis[i - 1])
-                typef = " Сравнение приростов данных на сегодня"
+                typef = "Сравнение приростов данных на сегодня"
             if len(stats) > len(dates):
                 del stats[len(stats) - (len(stats) - len(dates)):len(stats)]
             figure = Figure(figsize=(6, 4), dpi=100)

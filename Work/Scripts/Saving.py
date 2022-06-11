@@ -39,7 +39,7 @@ class Saver:
     def unite_data(self, list_columns: list, list_data: list, list_names: list):
         """
         Сохранение объединённой таблицы заражений и смертей
-        :param list_columns:
+        :param list_columns: Список имён столбцов
         :param list_data: Список списков вида [[[Дата, Заражения, Смерти], ...], [[Дата, Заражения, Смерти], ...] ...]
         :param list_names: Список названий стран для которых даётся статистика
         :return: pd.DataFrame

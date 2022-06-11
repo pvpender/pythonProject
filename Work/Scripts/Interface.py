@@ -14,6 +14,9 @@ from matplotlib.backends.backend_tkagg import (
 
 
 class TablesWindow(tk.Tk):
+    """
+    Класс окна создания таблиц
+    """
     def __init__(self, names, par: Parser, database: Database, saver: Saver):
         super().__init__()
         self.mas = []
@@ -44,11 +47,25 @@ class TablesWindow(tk.Tk):
 
     @staticmethod
     def show(names, par: Parser, database: Database, saver: Saver):
+        """
+        Создания окна
+        :param names: Спискок стран
+        :param par: Парсер
+        :param database: База данных
+        :param saver: Сохранитель
+        :return: None
+        author Moiseev Nicolay
+        """
         ex = TablesWindow(names, par, database, saver)
         ex.geometry("1400x720")
         ex.mainloop()
 
     def create_table(self):
+        """
+        Создание текстового отчёта
+        :return: None
+        author Moiseev Nicolay
+        """
         mas_lists = []
         list_names = []
         list_columns = []
@@ -79,6 +96,9 @@ class TablesWindow(tk.Tk):
 
 
 class Graphics(tk.Tk):
+    """
+    Класс окна с графиками
+    """
     def __init__(self, country: str, typef: str, disease_base: Database, par: Parser, saver: Saver):
         super().__init__()
         self.title('Статистика по стране')
@@ -89,7 +109,8 @@ class Graphics(tk.Tk):
         self.saver = saver
         flag = TRUE
         info = list
-        stats = list
+        stats1, stats2 = [], []
+        moredies, moredis = [], []
         try:
             info = par.get_country_info(str(country), disease_base)
         except NoCountryLink:
@@ -123,7 +144,6 @@ class Graphics(tk.Tk):
                 stats2 = [int(item[2]) for item in info]
                 typef = "Смерти относительно заражений"
             elif typef == "box":
-                diseases = [int(item[2]) for item in info]
                 predies = [int(item[1]) for item in info]
                 moredies = []
                 for i in range(1, len(predies) - 1):
@@ -139,12 +159,12 @@ class Graphics(tk.Tk):
             canvas = FigureCanvasTkAgg(figure, self)
             NavigationToolbar2Tk(canvas, self)
             gr = figure.add_subplot()
-            if(typef == "Смерти относительно заражений"):
+            if typef == "Смерти относительно заражений":
                 gr.scatter(stats1, stats2)
-            elif(typef==" Сравнение приростов данных на сегодня"):
-                columns=[moredies, moredis]
+            elif typef == "Сравнение приростов данных на сегодня":
+                columns = [moredies, moredis]
                 gr.boxplot(columns)
-                gr.set_xticks([1,2])
+                gr.set_xticks([1, 2])
                 gr.set_xticklabels(["Прирост смертей", "Прирост заражений"])
             else:
                 gr.plot(dates, stats)
@@ -171,6 +191,13 @@ class Graphics(tk.Tk):
                 btn.pack()
 
     def insert(self, database: Database, country: str):
+        """
+        Обновление информации о стране
+        :param database: База данных
+        :param country: Страна
+        :return: None
+        author Moiseev Nicolay
+        """
         filepath = fd.askopenfilename(parent=self, filetypes=[("CSV file", "*.csv")])
         try:
             mas = pd.read_csv(filepath)
@@ -190,6 +217,12 @@ class Graphics(tk.Tk):
 
     @staticmethod
     def check(mas: list):
+        """
+        Проверка правильности формата входного файла
+        :param mas: Список извлечённый из входного файла
+        :return: None
+        author Moiseev Nicolay
+        """
         try:
             if (len(mas[0]) != 4) or not (datetime.strptime(mas[0][1], "%d.%m.%y")):
                 return False
@@ -200,13 +233,25 @@ class Graphics(tk.Tk):
 
     @staticmethod
     def show(country, typef, disease_base, par, saver):
+        """
+        Создание окна
+        :param country: Страна
+        :param typef: Вид графика
+        :param disease_base: База данных
+        :param par: Парсер
+        :param saver: Сохранитель
+        :return: None
+        author Kamakin Andrey
+        """
         gr = Graphics(country, typef, disease_base, par, saver)
         gr.geometry('1400x720')
         gr.mainloop()
 
 
 class MainInterface(Frame):
-
+    """
+    Класс главного окна интерфейса
+    """
     countryNameText = StringVar
     permText = StringVar
     names = list
@@ -226,6 +271,12 @@ class MainInterface(Frame):
         saver.save_world_data(info)
 
     def when_point(self, val):
+        """
+        Нахождение страны в списке
+        :param val: Переменная события
+        :return: None
+        author Kamakin Andrey
+        """
         sender = val.widget
         index = sender.curselection()
         try:
@@ -238,6 +289,11 @@ class MainInterface(Frame):
             self.confirm()
 
     def confirm(self):
+        """
+        Выбор нужной страны
+        :return: None
+        author Kamakin Andrey
+        """
         try:
             index = self.lb.get(0, "end").index(self.permText.get())
             print(self.permText.get())
@@ -251,6 +307,11 @@ class MainInterface(Frame):
             self.var.set("Заражений за сегодня: -- ; Смертей за сегодня: -- ")
 
     def init_ui(self):
+        """
+        Инициализация интерфейса
+        :return: None
+        author Kamakin Andrey
+        """
         self.master.title("Информация по странам")
         self.countryNameText = StringVar()
         self.countryNameText.set("Выберите страну")

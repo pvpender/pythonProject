@@ -144,7 +144,7 @@ class Graphics(tk.Tk):
                 stats2 = [int(item[2]) for item in info]
                 typef = "Смерти относительно заражений"
             elif typef == "box":
-                predies = [int(item[1]) for item in info]
+                predies = [int(item[2]) for item in info]
                 moredies = []
                 for i in range(1, len(predies) - 1):
                     moredies.append(predies[i] - predies[i - 1])

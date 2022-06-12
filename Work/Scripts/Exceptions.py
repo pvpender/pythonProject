@@ -14,5 +14,5 @@ class TooMoreRequests(Exception):
     """
 
     def __init__(self):
-        self.message = "So much request please try again later"
+        self.message = "Too much requests please try again later"
         super().__init__(self.message)
